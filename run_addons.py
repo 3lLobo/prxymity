@@ -1,7 +1,12 @@
 from my_addons.dump_body import DumpBody
 from my_addons.add_modelid import AddModelId
+from my_addons.filter_keys import FilterKeys
 
-MODEL_NAME = "gpt-4-0125-preview"
-MODEL_NAME = "TheBloke/Llama-2-13B-chat-AWQ"
+MODEL_NAME = "gemini-2.0-flash"
+FILTER_KEYS = ["model", "messages"]
 
-addons = [DumpBody(), AddModelId(MODEL_NAME)]
+addons = [
+    FilterKeys(keys=FILTER_KEYS),
+    AddModelId(MODEL_NAME),
+    DumpBody(),
+]

@@ -18,8 +18,8 @@ class AddModelId(object):
                 f.write(str(headers))
             try:
                 data = json.loads(flow.request.content.decode("utf-8"))
-                if "model" not in data:
-                    data["model"] = self.model_name
+                # if "model" not in data:
+                data["model"] = self.model_name
                 # logging.info(data)
                 flow.request.content = json.dumps(data).encode("utf-8")
             except Exception as e:

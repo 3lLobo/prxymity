@@ -1,3 +1,7 @@
+# Data
+data/
+# No idea why this is created, but it is
+headers.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
