@@ -81,11 +81,15 @@ class DumpBody(object):
             data (bytes): The raw data.
             stream_id (str): Flow id.
         """
+        # Gemini debugging
         compact_time_str = datetime.now().strftime("%Y%m%d%H%M%S")
-        dump_file: pathlib.Path = self.dump_path.joinpath(f"raw/{compact_time_str}.txt")
+        dump_file: pathlib.Path = self.dump_path.joinpath(
+            f"raw/{compact_time_str}.txt",
+        )
         dump_file.parent.mkdir(exist_ok=True)
         dump_file.write_bytes(data)
         logging.info(f"Dumping raw {stream_id} to {dump_file}")
+
         self.flow_data[stream_id].raw = str(dump_file)
 
     def dump_body(self, body: json.loads, stream_id: str) -> None:
