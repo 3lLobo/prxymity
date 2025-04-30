@@ -1,2 +1,6 @@
 mitmproxy
 addict
+
+requests
+elasticsearch=8.17.2
+dotenv
