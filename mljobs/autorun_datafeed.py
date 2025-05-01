@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 # Load environment variables from .env file
 load_dotenv()  # take environment variables
 
-CERT_FINGERPRINT = os.environ.get("CERT_FINGERPRINT", "")
-ELASTIC_PASSWORD = os.environ.get("ELASTIC_PASSWORD", "")
+ES_FINGERPRINT = os.environ.get("ES_FINGERPRINT", "")
+ES_PASSWORD = os.environ.get("ES_PASSWORD", "")
 ES_HOST = os.environ.get("ES_HOST", "")
 
 client = Elasticsearch(
     [ES_HOST],
-    ssl_assert_fingerprint=CERT_FINGERPRINT,
-    basic_auth=("elastic", ELASTIC_PASSWORD),
+    ssl_assert_fingerprint=ES_FINGERPRINT,
+    basic_auth=("elastic", ES_PASSWORD),
 )
 
 print(json.dumps(client.info().body, indent=2))
