@@ -8,6 +8,7 @@ import logging
 import json
 from dotenv import load_dotenv
 import requests
+
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -45,15 +46,21 @@ class DetectionRules:
         """
         Get all rules from the elasticsearch cluster
         """
-        url = f"{self.kibana_host}/api/detection_engine/rules/_find?page=1&per_page=10000&sort_field=enabled&sort_order=desc"
-        response = self.session.get(url)
+        get_params = {
+            "page": 1,
+            "per_page": 10000,
+            "sort_field": "enabled",
+            "sort_order": "desc",
+        }
+        url = f"{self.kibana_host}/api/detection_engine/rules/_find"
+        response = self.session.get(url, params=get_params)
         if response.status_code == 200:
             return response.json()
         else:
-            logger.error(f"Error getting rules: {response.status_code}")
-            logger.error(f"Error getting rules: {response.text}")
+            logger.error("Error getting rules: %s", response.status_code)
+            logger.error("Error getting rules: %s", response.text)
             return None
-        
+
     def export_rules(self, rule_ids=None):
         """
         Export rules from the elasticsearch cluster
@@ -62,14 +69,14 @@ class DetectionRules:
             logger.error("No rules found")
             return None
         filtered_rules = []
-        
+
         if rule_ids is None:
             rule_ids = [rule["id"] for rule in self.rules["data"]]
 
         if not isinstance(rule_ids, list):
             logger.error("rule_ids must be a list")
             return None
-        
+
         for rule in self.rules["data"]:
             if rule["id"] in rule_ids:
                 filtered_rules.append(rule)
@@ -84,10 +91,10 @@ class DetectionRules:
             return None
         filtered_rules = []
         for rule in self.rules["data"]:
-            if "tags" in rule and any(tag in rule["tags"] for tag in tags):
+            if "tags" in rule and all(tag in rule["tags"] for tag in tags):
                 filtered_rules.append(rule)
         return filtered_rules
-    
+
     def get_tags(self):
         """
         Get all tags from the elasticsearch cluster
@@ -100,8 +107,7 @@ class DetectionRules:
             if "tags" in rule:
                 tags.update(rule["tags"])
         return list(tags)
-    
-    
+
 
 dr = DetectionRules(
     kibana_host=KIBANA_HOST,
@@ -115,7 +121,7 @@ print(dr.get_tags())
 rules = dr.export_rules()
 
 
-with open("data/rules.json", "w") as f:
+with open("data/rules.json", "w", encoding="utf-8") as f:
     json.dump(
         rules,
         f,
