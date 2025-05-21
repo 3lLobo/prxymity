@@ -120,17 +120,22 @@ class AlertProcessor:
         with open(self.file_path, "r", encoding="utf-8") as f:
             return json.load(f)
 
-    def process_alerts(self) -> None:
+    def process_alerts(self) -> List[str]:
         """
         Process and format each alert in the JSON data.
+
+        :return: A list of formatted alert strings.
         """
         hits = self.data
+        res = []
         for hit in hits:
             alert = hit.get("_source", {})
             alert["_id"] = hit.get("_id", "")
             formatter = AlertFormatter(alert, fields=self.keys)
-            print(formatter.format())
-            print()  # Spacing between alerts
+            # print(formatter.format())
+            # print()  # Spacing between alerts
+            res.append(formatter.format())
+        return res
 
 
 if __name__ == "__main__":
