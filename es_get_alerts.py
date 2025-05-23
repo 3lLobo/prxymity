@@ -4,7 +4,7 @@ import json
 from dotenv import load_dotenv
 import elasticsearch
 from convert_alerts import AlertProcessor
-from ollama import chat, ChatResponse, Client
+
 
 load_dotenv()
 # Load environment variables from .env file
@@ -64,27 +64,47 @@ def format_prompt(base_prompt: str, alerts: List[str]) -> str:
     )
 
 
-model = "ctxLlama:latest"
-base_prompt_path = "ad_prompt.txt"
+model = os.environ.get("LLM_MODEL", "")
+base_prompt_path = "prompts/fp_prompt.txt"
 with open(base_prompt_path, "r", encoding="utf-8") as f:
     base_prompt = f.read()
 
-
-client = Client(
-    host="http://localhost:11434",
-    # headers={'x-some-header': 'some-value'}
-)
-
-response: ChatResponse = client.chat(
-    model,
-    messages=[
+payload = {
+    "model": model,
+    "messages": [
         {"role": "user", "content": format_prompt(base_prompt, res)},
     ],
-    options={
-        "temperature": 0.2,
-    },
+    # "options": {
+    #     "temperature": 0.2,
+    # },
+}
+
+payload_path = "data/payload.json"
+with open(payload_path, "w", encoding="utf-8") as f:
+    json.dump(payload, f, indent=4)
+
+import requests
+
+LLM_HOST = os.environ.get("LLM_HOST", "http://localhost:11434")
+LLM_TOKEN = os.environ.get("LLM_TOKEN", "")
+print(model)
+headers = {
+    "Authorization": f"Bearer {LLM_TOKEN}",
+    "Content-Type": "application/json",
+}
+
+res = requests.post(
+    f"{LLM_HOST}/v1beta/openai/chat/completions",
+    headers=headers,
+    json=payload,
+    verify=False,
+    timeout=100,
 )
-print(response.prompt_eval_count)
-print(response.eval_count)
-print(response.message.content, file=open("data/response.txt", "w", encoding="utf-8"))
+print(res.status_code)
+response = res.json()
+print(response)
+
+# print(response.prompt_eval_count)
+# print(response.eval_count)
+print(response, file=open("data/response.txt", "w", encoding="utf-8"))
 # print(json.dumps(response.message, indent=4))
