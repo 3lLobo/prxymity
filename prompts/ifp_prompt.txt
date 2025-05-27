@@ -5,6 +5,7 @@ Your task is to output a list where each alert is assigned:
 
 * A `tag`: either `"true_positive"` or `"false_positive"`.
 * A `reason`: a short, clear explanation why this classification was made, based on available alert context (such as user role, command line behavior, known software patterns, or rule misconfiguration).
+* An `investigation_guide`: a concise set of 2–4 actionable steps an analyst can take in Kibana using Lucene queries and available tools to validate the alert further or gather more context. This includes suggestions like checking related processes, host/user history, correlating logs, or submitting hashes to VirusTotal. Keep it focused, relevant, and usable in an air-gapped environment (except for VT, which is allowed externally).
 
 Return a JSON array of objects. Each object must follow this structure:
 
@@ -12,7 +13,8 @@ Return a JSON array of objects. Each object must follow this structure:
 {
   "alertId": "string",
   "tag": "true_positive" | "false_positive",
-  "reason": "string"
+  "reason": "string",
+  "investigation_guide": ["step 1", "step 2", "..."]
 }
 ```
 
@@ -30,29 +32,33 @@ Do not include any markdown formatting, JSON schema, or additional text. Only re
 
 ---
 
-### Example Classifications
-
-False Positive Example:
+### Example Output
 
 ```json
-{
-  "alertId": "abc-123",
-  "tag": "false_positive",
-  "reason": "The command line shows execution of a known safe administrative tool used regularly by IT staff: {{ process.command_line C:\\Windows\\System32\\gpupdate.exe }}."
-}
+[
+  {
+    "alertId": "abc-123",
+    "tag": "false_positive",
+    "reason": "PowerShell execution by IT admin during regular hours on known safe host.",
+    "investigation_guide": [
+      "search for: host.name:\"host123\" AND process.name:\"powershell.exe\"",
+      "check user role in AD: 'admin1@domain.local'",
+      "correlate with previous PowerShell executions on same host in last 7 days"
+    ]
+  },
+  {
+    "alertId": "xyz-789",
+    "tag": "true_positive",
+    "reason": "Suspicious script execution from temp directory by low-privilege user.",
+    "investigation_guide": [
+      "search for: process.executable.path:*\\\\Temp\\\\*.ps1",
+      "lookup hash on VirusTotal if available",
+      "review user activity: user.name:\"jdoe\"",
+      "search for other executions of the same script hash on other hosts"
+    ]
+  }
+]
 ```
-
-True Positive Example:
-
-```json
-{
-  "alertId": "xyz-789",
-  "tag": "true_positive",
-  "reason": "Unusual execution of obfuscated PowerShell from a user with no admin rights: {{ process.command_line powershell.exe -EncodedCommand ... }} suggesting possible initial access or script-based malware delivery."
-}
-```
-
----
 
 Use the alert data below to classify each one:
 
