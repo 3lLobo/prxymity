@@ -4,6 +4,7 @@ import json
 from dotenv import load_dotenv
 import elasticsearch
 from convert_alerts import AlertProcessor
+import requests
 
 
 load_dotenv()
@@ -20,7 +21,7 @@ es = elasticsearch.Elasticsearch(
     # use_ssl=True,
     ca_certs=ES_FINGERPRINT,
 )
-size = 31
+size = 11
 severity = "medium"  # "low", "medium", "critical"
 #  filter for severity critical
 query = {
@@ -65,7 +66,7 @@ def format_prompt(base_prompt: str, alerts: List[str]) -> str:
 
 
 model = os.environ.get("LLM_MODEL", "")
-base_prompt_path = "prompts/fp_prompt.txt"
+base_prompt_path = "prompts/ifp_prompt.txt"
 with open(base_prompt_path, "r", encoding="utf-8") as f:
     base_prompt = f.read()
 
@@ -83,7 +84,6 @@ payload_path = "data/payload.json"
 with open(payload_path, "w", encoding="utf-8") as f:
     json.dump(payload, f, indent=4)
 
-import requests
 
 LLM_HOST = os.environ.get("LLM_HOST", "http://localhost:11434")
 LLM_TOKEN = os.environ.get("LLM_TOKEN", "")
@@ -107,4 +107,13 @@ print(response)
 # print(response.prompt_eval_count)
 # print(response.eval_count)
 print(response, file=open("data/response.txt", "w", encoding="utf-8"))
+
 # print(json.dumps(response.message, indent=4))
+print(
+    response["choices"][0]["message"]["content"][8:-4].replace("\n", ""),
+    file=open(
+        "data/content.json",
+        "w",
+        encoding="utf-8",
+    ),
+)
