@@ -137,6 +137,16 @@ class AlertProcessor:
             res.append(formatter.format())
         return res
 
+    @staticmethod
+    def format_prompt(base_prompt: str, alerts: List[str]) -> str:
+        """
+        Format the base prompt and alerts into a single string.
+        :param base_prompt: The base prompt string.
+        :param alerts: A list of formatted alert strings.
+        :return: A formatted string containing the base prompt and alerts.
+        """
+        return "\n\n".join([base_prompt, *alerts, '"""'])
+
 
 if __name__ == "__main__":
     processor = AlertProcessor("data/alerts.json", "data/keys.txt")
