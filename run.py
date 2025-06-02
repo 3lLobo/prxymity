@@ -39,11 +39,9 @@ formatted_prompt = AlertProcessor.format_prompt(base_prompt, processed_alerts)
 payload = {
     "model": config.llm_model,
     "messages": [{"role": "user", "content": formatted_prompt}],
+    "stream": True,
 }
 FileManager.write_json("data/payload.json", payload)
 
-response = llm_client.send_prompt(payload)
-FileManager.write_text("data/response.txt", json.dumps(response, indent=4))
-
-content = response["choices"][0]["message"]["content"]
+content = llm_client.send_prompt(payload)
 FileManager.write_text("data/content.json", content)
