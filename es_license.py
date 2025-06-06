@@ -5,6 +5,9 @@ import json
 import requests
 import logging
 import time
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class License:
