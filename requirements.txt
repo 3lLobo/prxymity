@@ -5,3 +5,5 @@ requests
 elasticsearch==8.17.2
 dotenv
 ollama==0.4.8
+pandas==2.3.0
+pydantic
