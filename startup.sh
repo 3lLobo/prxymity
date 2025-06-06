@@ -7,7 +7,6 @@
 if [ -f .env ]; then
     export $(grep -v '^#' .env | xargs)
 fi
-echo $(env | grep ES)
 # Load python venv
 if [ -d .venv ]; then
     source .venv/bin/activate
