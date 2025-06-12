@@ -88,6 +88,12 @@ class EmailBeaconDetector:
         if data.empty:
             raise Exception("No data retrieved. Check index name and field mappings.")
 
+        # Check if receiver field exists and is a list
+        if self.receiver_field in data.columns:
+            # Explode the receiver list into separate rows
+            data = data.explode(self.receiver_field)
+            data.reset_index(drop=True, inplace=True)
+
         data['triad_id'] = (data[self.sender_field] + data[self.receiver_field]).apply(hash)
         data['triad_freq'] = data.groupby('triad_id')['triad_id'].transform('count')
         self.high_freq = list(data[data.triad_freq > self.min_occur].groupby('triad_id').groups.keys())
