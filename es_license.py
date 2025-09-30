@@ -62,19 +62,27 @@ class License:
             self.license = json.load(f)
 
         headers = {"Content-Type": "application/json"}
-        response = requests.post(
-            f"{self.es}/_license",
-            headers=headers,
-            data=json.dumps(self.license),
-            verify=not self.insecure,
-            auth=(
-                (self.username, self.password)
-                if self.username and self.password
-                else None
-            ),
-            timeout=10,
-        )
-        self.es_license_status = response.json()
+        try:
+            response = requests.post(
+                f"{self.es}/_license",
+                headers=headers,
+                data=json.dumps(self.license),
+                verify=not self.insecure,
+                auth=(
+                    (self.username, self.password)
+                    if self.username and self.password
+                    else None
+                ),
+                timeout=10,
+            )
+        except requests.exceptions.RequestException as e:
+            logging.error("Error connecting to ES server: %s", e)
+            # retry after 60 seconds
+            time.sleep(60)
+            return None
+        if response.status_code == 200:
+            self.es_license = response.json()
+
         self.es_license_status_code = response.status_code
 
         return response
@@ -89,18 +97,19 @@ class License:
 
         while True:
             response = self.post_license_file()
-            if response.status_code == 200:
+            if response.status_code and response.status_code == 200:
                 logging.info("License activated successfully.")
-            else:
+            elif response.status_code:
                 logging.error(
-                    "Failed to activate license: {} - {}".format(
-                        response.status_code,
-                        self.es_license_status.get("error", {}).get(
-                            "reason",
-                            None,
-                        ),
-                    )
+                    "Failed to activate license: %d - %s",
+                    response.status_code,
+                    self.es_license_status.get("error", {}).get(
+                        "reason",
+                        None,
+                    ),
                 )
+            else:
+                logging.error("No response from ES server.")
             time.sleep(interval)
 
 
